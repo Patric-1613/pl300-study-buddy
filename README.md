@@ -47,5 +47,5 @@ python study_buddy.py
 - Web: Flask + marked.js
 
 ## Author
-Pratik Mugade — MSc Data Science, Kingston University
-Built as part of the Virtusa GenAI Internship 2026
+Pratikraj Mugade — MSc Data Science, Kingston University
+
