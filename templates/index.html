@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>PL-300 Study Buddy</title>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #0f1117;
+      color: #e0e0e0;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      padding: 16px 24px;
+      background: #1a1d27;
+      border-bottom: 1px solid #2a2d3e;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    header h1 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #ffffff;
+    }
+
+    .badge {
+      background: #f59e0b22;
+      color: #f59e0b;
+      border: 1px solid #f59e0b44;
+      border-radius: 4px;
+      padding: 2px 8px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .layout {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    .chat-panel {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      border-right: 1px solid #2a2d3e;
+    }
+
+    .messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .message {
+      max-width: 80%;
+      padding: 12px 16px;
+      border-radius: 12px;
+      line-height: 1.6;
+      font-size: 0.9rem;
+    }
+
+    .message.user {
+      align-self: flex-end;
+      background: #2563eb;
+      color: #fff;
+      border-bottom-right-radius: 4px;
+      white-space: pre-wrap;
+    }
+
+    .message.bot {
+      align-self: flex-start;
+      background: #1a1d27;
+      border: 1px solid #2a2d3e;
+      border-bottom-left-radius: 4px;
+    }
+
+    .message.thinking {
+      align-self: flex-start;
+      background: #1a1d27;
+      border: 1px solid #2a2d3e;
+      color: #6b7280;
+      font-style: italic;
+      border-bottom-left-radius: 4px;
+    }
+
+    /* Markdown styles inside bot messages */
+    .message.bot p { margin: 6px 0; }
+    .message.bot h1, .message.bot h2, .message.bot h3 {
+      color: #e0e0e0;
+      margin: 12px 0 6px;
+      font-size: 0.95rem;
+    }
+    .message.bot ul, .message.bot ol {
+      margin: 6px 0 6px 20px;
+    }
+    .message.bot li { margin: 4px 0; }
+    .message.bot strong { color: #ffffff; }
+    .message.bot code {
+      background: #0f1117;
+      border: 1px solid #2a2d3e;
+      border-radius: 4px;
+      padding: 1px 6px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.82rem;
+      color: #f59e0b;
+    }
+    .message.bot pre {
+      background: #0f1117;
+      border: 1px solid #2a2d3e;
+      border-radius: 6px;
+      padding: 12px;
+      overflow-x: auto;
+      margin: 8px 0;
+    }
+    .message.bot pre code { border: none; padding: 0; background: transparent; }
+    .message.bot table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 8px 0;
+      font-size: 0.82rem;
+    }
+    .message.bot th, .message.bot td {
+      border: 1px solid #2a2d3e;
+      padding: 6px 10px;
+      text-align: left;
+    }
+    .message.bot th { background: #1a1d27; color: #f59e0b; }
+    .message.bot blockquote {
+      border-left: 3px solid #2563eb;
+      margin: 8px 0;
+      padding: 4px 12px;
+      color: #9ca3af;
+    }
+
+    .input-bar {
+      padding: 16px 24px;
+      background: #1a1d27;
+      border-top: 1px solid #2a2d3e;
+      display: flex;
+      gap: 10px;
+    }
+
+    .input-bar input {
+      flex: 1;
+      background: #0f1117;
+      border: 1px solid #2a2d3e;
+      border-radius: 8px;
+      padding: 10px 14px;
+      color: #e0e0e0;
+      font-size: 0.9rem;
+      outline: none;
+    }
+
+    .input-bar input:focus { border-color: #2563eb; }
+
+    .input-bar button {
+      background: #2563eb;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 20px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .input-bar button:disabled {
+      background: #374151;
+      cursor: not-allowed;
+    }
+
+    .weak-panel {
+      width: 260px;
+      display: flex;
+      flex-direction: column;
+      background: #0f1117;
+    }
+
+    .weak-panel h2 {
+      padding: 16px 20px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #6b7280;
+      border-bottom: 1px solid #2a2d3e;
+    }
+
+    .weak-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .weak-item {
+      background: #1a1d27;
+      border: 1px solid #f59e0b33;
+      border-left: 3px solid #f59e0b;
+      border-radius: 6px;
+      padding: 10px 12px;
+    }
+
+    .weak-item .topic {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #f59e0b;
+    }
+
+    .weak-item .note {
+      font-size: 0.78rem;
+      color: #9ca3af;
+      margin-top: 3px;
+    }
+
+    .empty-state {
+      color: #4b5563;
+      font-size: 0.82rem;
+      text-align: center;
+      padding: 24px 12px;
+      line-height: 1.6;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>PL-300 Study Buddy</h1>
+  <span class="badge">Power BI Data Analyst</span>
+  <span style="margin-left:auto; font-size:0.78rem; color:#4b5563">powered by GPT-5.4-mini + Chroma</span>
+</header>
+
+<div class="layout">
+
+  <div class="chat-panel">
+    <div class="messages" id="messages">
+      <div class="message bot">
+        Hi! Ask me anything from your PL-300 question bank — or tell me what you keep getting wrong and I'll track it for you.
+      </div>
+    </div>
+    <div class="input-bar">
+      <input
+        type="text"
+        id="question"
+        placeholder="Ask a question or say what you're struggling with..."
+        autocomplete="off"
+      />
+      <button id="askBtn" onclick="ask()">Ask</button>
+    </div>
+  </div>
+
+  <div class="weak-panel">
+    <h2>Weak Topics</h2>
+    <div class="weak-list" id="weakList">
+      <div class="empty-state">Topics you struggle with will appear here automatically.</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  var input = document.getElementById("question");
+  var btn = document.getElementById("askBtn");
+  var messages = document.getElementById("messages");
+  var weakList = document.getElementById("weakList");
+
+  input.addEventListener("keydown", function(e) {
+    if (e.key === "Enter") { ask(); }
+  });
+
+  function appendMessage(text, role) {
+    var div = document.createElement("div");
+    div.className = "message " + role;
+    if (role === "bot") {
+      div.innerHTML = marked.parse(text);
+    } else {
+      div.textContent = text;
+    }
+    messages.appendChild(div);
+    messages.scrollTop = messages.scrollHeight;
+    return div;
+  }
+
+  function renderWeakTopics(topics) {
+    if (!topics || topics.length === 0) {
+      weakList.innerHTML = '<div class="empty-state">Topics you struggle with will appear here automatically.</div>';
+      return;
+    }
+    var html = "";
+    for (var i = 0; i < topics.length; i++) {
+      var t = topics[i];
+      html += '<div class="weak-item">';
+      html += '<div class="topic">' + t.topic + '</div>';
+      if (t.note) {
+        html += '<div class="note">' + t.note + '</div>';
+      }
+      html += '</div>';
+    }
+    weakList.innerHTML = html;
+  }
+
+  function ask() {
+    var question = input.value.trim();
+    if (!question) { return; }
+
+    input.value = "";
+    btn.disabled = true;
+
+    appendMessage(question, "user");
+    var thinking = appendMessage("Thinking...", "thinking");
+
+    fetch("/ask", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ question: question })
+    })
+    .then(function(res) { return res.json(); })
+    .then(function(data) {
+      thinking.remove();
+      appendMessage(data.answer, "bot");
+      renderWeakTopics(data.weak_topics);
+      btn.disabled = false;
+      input.focus();
+    })
+    .catch(function(err) {
+      thinking.remove();
+      appendMessage("Something went wrong. Check your terminal for errors.", "bot");
+      btn.disabled = false;
+    });
+  }
+</script>
+
+</body>
+</html>

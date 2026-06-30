@@ -1,0 +1,13 @@
+venv/
+.env
+chroma_db_pl300/
+pl300_notes.pdf
+parsed_output.txt
+chunks_check.txt
+weak_topics.json
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.DS_Store
+.vscode/
